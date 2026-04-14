@@ -8,23 +8,24 @@ SPDX-License-Identifier: GPL-3.0-or-later
 
 <tryton>
     <data>
+        <!--
+            Inherit from the same base view as health_appointment_fiuner.
+            Tryton applies xpaths in module dependency order:
+              1. health_appointment_fiuner xpaths run first (adds phone/dni/age/etc, widens columns)
+              2. our xpaths run after — move healthprof before patient on the resolved tree
+        -->
         <record model="ir.ui.view" id="view_gnuhealth_appointment_tree_custom">
             <field name="model">gnuhealth.appointment</field>
             <field name="inherit" ref="health.gnuhealth_appointment_tree"/>
             <field name="name">gnuhealth_appointment_tree_custom</field>
             <field name="arch" type="xml"><![CDATA[
                 <data>
-                    <!-- Step 1: remove time — now only ONE appointment_date left (date field) -->
-                    <xpath expr="/tree/field[@name='appointment_date'][@widget='time']" position="replace"/>
-                    <!-- Step 2: remove healthprof from end -->
+                    <!-- Remove healthprof from its current position (near end of tree) -->
                     <xpath expr="/tree/field[@name='healthprof']" position="replace"/>
-                    <!-- Step 3: insert healthprof after the now-unique appointment_date (=Fecha) -->
-                    <xpath expr="/tree/field[@name='appointment_date']" position="after">
+                    <!-- Re-insert healthprof before patient, with same attrs fiuner sets -->
+                    <xpath expr="/tree/field[@name='patient']" position="before">
                         <field name="healthprof" expand="1" width="300"/>
-                    </xpath>
-                    <!-- Step 4: insert time after healthprof (unique anchor, reliable) -->
-                    <xpath expr="/tree/field[@name='healthprof']" position="after">
-                        <field name="appointment_date" string="Time" widget="time"/>
+                        <field name="appointment_date" string="Date" widget="date"/>
                     </xpath>
                 </data>
             ]]></field>
